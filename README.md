@@ -6,30 +6,37 @@ If you run on Linux and would like to use the GUI, there is now a port of it as 
 
 ### Table of Contents
 
-- [Tutorials](#tutorials)
-- [Required Dependencies](#required-dependencies)
-  - [Linux/macOS](#linux-and-macos-dependencies)
-- [Installation](#installation)
-    - [Linux/macOS](#linux-and-macos)
-      - [Default Install Locations](#install-location)
+- [Kohya's GUI](#kohyas-gui)
+    - [Table of Contents](#table-of-contents)
+  - [Tutorials](#tutorials)
+  - [Required Dependencies](#required-dependencies)
+    - [Linux and macOS dependencies](#linux-and-macos-dependencies)
+  - [Installation](#installation)
+    - [Runpod](#runpod)
+    - [Linux and macOS](#linux-and-macos)
+      - [Install location](#install-location)
     - [Windows](#windows)
-    - [CUDNN 8.6](#optional--cudnn-86)
-- [Upgrading](#upgrading)
-  - [Windows](#windows-upgrade)
-  - [Linux/macOS](#linux-and-macos-upgrade)
-- [Launching the GUI](#starting-gui-service)
-  - [Windows](#launching-the-gui-on-windows)
-  - [Linux/macOS](#launching-the-gui-on-linux-and-macos)
-  - [Direct Launch via Python Script](#launching-the-gui-directly-using-kohyaguipy)
-- [Dreambooth](#dreambooth)
-- [Finetune](#finetune)
-- [Train Network](#train-network)
-- [LoRA](#lora)
-- [Troubleshooting](#troubleshooting)
-  - [Page File Limit](#page-file-limit)
-  - [No module called tkinter](#no-module-called-tkinter)
-  - [FileNotFoundError](#filenotfounderror)
-- [Change History](#change-history)
+    - [Optional: CUDNN 8.6](#optional-cudnn-86)
+  - [Upgrading](#upgrading)
+    - [Windows Upgrade](#windows-upgrade)
+    - [Linux and macOS Upgrade](#linux-and-macos-upgrade)
+- [Starting GUI Service](#starting-gui-service)
+    - [Launching the GUI on Windows](#launching-the-gui-on-windows)
+  - [Launching the GUI on Linux and macOS](#launching-the-gui-on-linux-and-macos)
+  - [Launching the GUI directly using kohya\_gui.py](#launching-the-gui-directly-using-kohya_guipy)
+  - [Dreambooth](#dreambooth)
+  - [Finetune](#finetune)
+  - [Train Network](#train-network)
+  - [LoRA](#lora)
+    - [26 Apr. 2023, 2023/04/26](#26-apr-2023-20230426)
+    - [25 Apr. 2023, 2023/04/25](#25-apr-2023-20230425)
+    - [Naming of LoRA](#naming-of-lora)
+  - [Sample image generation during training](#sample-image-generation-during-training)
+  - [Troubleshooting](#troubleshooting)
+    - [Page File Limit](#page-file-limit)
+    - [No module called tkinter](#no-module-called-tkinter)
+    - [FileNotFoundError](#filenotfounderror)
+  - [Change History](#change-history)
 
 ## Tutorials
 
@@ -49,6 +56,17 @@ If you run on Linux and would like to use the GUI, there is now a port of it as 
 - Install [Visual Studio 2015, 2017, 2019, and 2022 redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 
 ### Linux and macOS dependencies
+Most of the documents are written in Japanese.
+
+* [Training guide - common](./train_README-ja.md) : data preparation, options etc... 
+  * [Chinese version](./train_README-zh.md)
+* [Dataset config](./config_README-ja.md) 
+* [DreamBooth training guide](./train_db_README-ja.md)
+* [Step by Step fine-tuning guide](./fine_tune_README_ja.md):
+* [training LoRA](./train_network_README-ja.md)
+* [training Textual Inversion](./train_ti_README-ja.md)
+* note.com [Image generation](https://note.com/kohya_ss/n/n2693183a798e)
+* note.com [Model conversion](https://note.com/kohya_ss/n/n374f316fe4ad)
 
 These dependencies are taken care of via `setup.sh` in the installation section. No additional steps should be needed unless the scripts inform you otherwise.
 
@@ -240,6 +258,36 @@ python lora_gui.py
 ```
 
 Once you have created the LoRA network, you can generate images via auto1111 by installing [this extension](https://github.com/kohya-ss/sd-webui-additional-networks).
+### 26 Apr. 2023, 2023/04/26
+
+- Added [Chinese translation](./train_README-zh.md) of training guide. [PR #445](https://github.com/kohya-ss/sd-scripts/pull/445) Thanks to tomj2ee!
+- `tag_images_by_wd14_tagger.py` can now get arguments from outside. [PR #453](https://github.com/kohya-ss/sd-scripts/pull/453) Thanks to mio2333!
+- 学習に関するドキュメントの[中国語版](./train_README-zh.md)が追加されました。 [PR #445](https://github.com/kohya-ss/sd-scripts/pull/445) tomj2ee氏に感謝します。
+- `tag_images_by_wd14_tagger.py`の引数を外部から取得できるようになりました。 [PR #453](https://github.com/kohya-ss/sd-scripts/pull/453) mio2333氏に感謝します。
+
+### 25 Apr. 2023, 2023/04/25
+
+- Please do not update for a while if you cannot revert the repository to the previous version when something goes wrong, because the model saving part has been changed.
+- Added `--save_every_n_steps` option to each training script. The model is saved every specified steps.
+  - `--save_last_n_steps` option can be used to save only the specified number of models (old models will be deleted).
+  - If you specify the `--save_state` option, the state will also be saved at the same time. You can specify the number of steps to keep the state with the `--save_last_n_steps_state` option (the same value as `--save_last_n_steps` is used if omitted).
+  - You can use the epoch-based model saving and state saving options together.
+  - Not tested in multi-GPU environment. Please report any bugs.
+- `--cache_latents_to_disk` option automatically enables `--cache_latents` option when specified. [#438](https://github.com/kohya-ss/sd-scripts/issues/438)
+- Fixed a bug in `gen_img_diffusers.py` where latents upscaler would fail with a batch size of 2 or more.
+  
+- モデル保存部分を変更していますので、何か不具合が起きた時にリポジトリを前のバージョンに戻せない場合には、しばらく更新を控えてください。
+- 各学習スクリプトに`--save_every_n_steps`オプションを追加しました。指定ステップごとにモデルを保存します。
+  - `--save_last_n_steps`オプションに数値を指定すると、そのステップ数のモデルのみを保存します（古いモデルは削除されます）。
+  - `--save_state`オプションを指定するとstateも同時に保存します。`--save_last_n_steps_state`オプションでstateを残すステップ数を指定できます（省略時は`--save_last_n_steps`と同じ値が使われます）。
+  - エポックごとのモデル保存、state保存のオプションと共存できます。
+  - マルチGPU環境でのテストを行っていないため、不具合等あればご報告ください。
+- `--cache_latents_to_disk`オプションが指定されたとき、`--cache_latents`オプションが自動的に有効になるようにしました。 [#438](https://github.com/kohya-ss/sd-scripts/issues/438)
+- `gen_img_diffusers.py`でlatents upscalerがバッチサイズ2以上でエラーとなる不具合を修正しました。
+
+
+Please read [Releases](https://github.com/kohya-ss/sd-scripts/releases) for recent updates.
+最近の更新情報は [Release](https://github.com/kohya-ss/sd-scripts/releases) をご覧ください。
 
 ### Naming of LoRA
 
